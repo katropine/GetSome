@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+    <title>GetSome...</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../css/datepicker.css" rel="stylesheet" type="text/css">
+    <link href="../css/local.css" rel="stylesheet" type="text/css">
+    <script>
+    	var moment = require('moment');
+    	var sqlite3 = require('sqlite3').verbose();
+    	var gui = require('nw.gui');
+
+		var db = new sqlite3.Database('./app/db/getsome_db.sqlite');
+		
+		var app_version = 1.1;
+		var schema_version = 0;
+
+		db.serialize(function() {
+			db.run("CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, done BOOLEAN,enddate DATE, created DATETIME, important BOOLEAN)");
+			db.run("CREATE TABLE IF NOT EXISTS dbinfo (id INTEGER PRIMARY KEY AUTOINCREMENT, schema_version INTEGER DEFAULT 0, app_version REAL DEFAULT 1.0)");
+			
+		});
+		//upgrades
+		db.serialize(function() {
+			db.get("SELECT * FROM dbinfo WHERE id=1", function(err, rows) {
+
+			 	if(rows == undefined){
+			 		db.run("INSERT INTO dbinfo (schema_version,app_version) VALUES (0,1.0)");
+
+			 		var stmt = db.prepare("INSERT INTO dbinfo (schema_version,app_version) VALUES (?,?)");
+            		stmt.run([schema_version,app_version]);
+            		stmt.finalize();
+			 	}else{
+			 		if(rows.schema_version < schema_version){
+						// updates to schema 
+
+			 			var stmt = db.prepare("UPDATE dbinfo SET schema_version = ?");
+			 			stmt.run([schema_version]);
+            			stmt.finalize();
+			 		}
+			 		if(rows.app_version < app_version){
+			 			// update version
+			 			var stmt = db.prepare("UPDATE dbinfo SET app_version = ?");
+			 			stmt.run([app_version]);
+            			stmt.finalize();
+			 		}	
+			 	}
+			
+				
+	    	});
+	    });
+		// Reference to window and tray
+	    var win = gui.Window.get();
+	    var tray;
+
+		// Hide window
+	    win.hide();
+	    win.minimize();
+	    // Show tray
+	    tray = new gui.Tray({ title: 'GetSome', icon: './app/checked-16.png' });
+
+	    // Give it a menu
+		var menu = new gui.Menu();
+		menu.append(new gui.MenuItem({ 
+			type: "normal", 
+			label: 'Close', 
+			icon: './app/icon_close_16px.gif', 
+			click: function() {
+    			win.show();
+    			gui.App.quit();
+  			} 
+  		}));
+		tray.menu = menu;
+	    
+	    // Get the minimize event
+	    win.on('close', function() {
+	      	this.hide();
+	    	
+
+	  	});
+
+	  	// Show window and remove tray when clicked
+	    tray.on('click', function() {
+	        win.show();
+	        win.removeAllListeners('minimize');
+	        //this.remove();
+	        //tray = null;
+	    });
+	    win.on('minimize', function() {
+	        this.hide();
+	    });
+	 	    
+
+
+    </script>
+</head>
+<body>
+<div class="container-fluid">
+	<br>
+	<header>
+		<ul class="nav nav-pills" ng-controller="HeaderController">
+			<li ng-class="{active: isActive('/')}">
+				<a href="#" data-toggle="tab">ToDo</a>
+			</li>
+			<li ng-class="{active: isActive('/important')}">
+				<a href="#important"  data-toggle="tab">Important</a>
+			</li>
+			<li ng-class="{active: isActive('/done')}">
+				<a href="#done"  data-toggle="tab">Done</a>
+			</li>
+		</ul>
+	</header>
+	<div style="padding-top: 10px;">
+		<div ng-view=""></div>
+	</div>
+	<footer ng-controller="FooterController">
+		<center>GetSome v{{app_version}}.{{schema_version}} by www.katropine.com license MIT</center>
+	</footer>
+</div>
+<script src="../js/jquery.js" type="text/javascript"></script>
+<script src="../js/bootstrap.js" type="text/javascript"></script>
+<script src="../js/angular.js" type="text/javascript"></script>
+<script src="../js/angular-route.js" type="text/javascript"></script>
+<script src="../js/angular-modalwindowbinder.js" type="text/javascript"></script>
+<script src="../js/angularui.js" type="text/javascript"></script>
+<script src="../js/datepicker.js" type="text/javascript"></script>
+<script src="../js/pagination.js" type="text/javascript"></script>
+<script src="../js/main.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+var app = angular.module('app', ['ui.bootstrap', 'ui.modalWindowBinder', 'ngRoute']);
+
+
+app.config(function($routeProvider) {
+    $routeProvider
+        .when('/',
+        {
+            templateUrl: "../html/todo.html",
+            controller: "ScheduleController"
+        })
+        .when('/done',
+        {
+            templateUrl: "../html/done.html",
+            controller: "DoneController"
+        })
+        .when('/important',
+        {
+            templateUrl: "../html/important.html",
+            controller: "ImportantController"
+        })
+});
+
+app.filter('fromNow', function() {
+    return function(dateString) {
+    	return moment(dateString).fromNow()
+    };
+});
+
+app.factory('TaskService',[ '$q', function($q) {
+	
+    var TaskService = {};
+
+	TaskService.fetch = function(offset, limit){
+		console.log('fetch');
+		var deferred = $q.defer();
+		db.all("SELECT * FROM task WHERE done=0 ORDER BY created DESC LIMIT ?,?", [offset, limit], function(err, rows) {
+            deferred.resolve(rows);
+        });
+        return deferred.promise;
+	};
+	TaskService.count = function(){
+		console.log('count');
+		var deferred = $q.defer();
+		db.get("SELECT COUNT(*) AS cnt FROM task WHERE done=0", function(err, rows) {
+			deferred.resolve(rows.cnt);
+        });
+        return deferred.promise;
+	};
+
+	TaskService.fetchDone = function(offset, limit){
+		console.log('fetchDone');
+		var deferred = $q.defer();
+		db.all("SELECT * FROM task WHERE done=1 ORDER BY created DESC LIMIT ?,?", [offset, limit], function(err, rows) {
+            deferred.resolve(rows);
+        });
+        return deferred.promise;
+	};	
+	TaskService.countDone = function(){
+		console.log('countDone');
+		var deferred = $q.defer();
+		db.get("SELECT COUNT(*) AS cnt FROM task WHERE done=1", function(err, rows) {
+            deferred.resolve(rows.cnt);
+        });
+        return deferred.promise;
+	};
+	TaskService.fetchImportant = function(offset, limit){
+		console.log('fetchDone');
+		var deferred = $q.defer();
+		db.all("SELECT * FROM task WHERE important=1 AND done=0 ORDER BY created DESC LIMIT ?,?", [offset, limit], function(err, rows) {
+            deferred.resolve(rows);
+        });
+        return deferred.promise;
+	};	
+	TaskService.countImportant = function(){
+		console.log('countDone');
+		var deferred = $q.defer();
+		db.get("SELECT COUNT(*) AS cnt FROM task WHERE important=1 AND done=0", function(err, rows) {
+            deferred.resolve(rows.cnt);
+        });
+        return deferred.promise;
+	};
+	TaskService.create = function(form){
+		console.log('create');
+		var self = this;
+		var deferred = $q.defer();
+		db.serialize(function() {
+          	var stmt = db.prepare("INSERT INTO task (title,description,done,enddate,created,important) VALUES (?,?,?,?,?,?)");
+          	stmt.run([form.title, form.description, 0,form.enddate, new Date(),0]);
+          	stmt.finalize();
+        	deferred.resolve(this.lastID);
+        });
+        return deferred.promise;
+	};
+	TaskService.update = function(task){
+		console.log('update');
+		var deferred = $q.defer();
+		db.serialize(function() {
+            var stmt = db.prepare("UPDATE task SET title=?, description=?, done=?, enddate=?, important=? WHERE id=?");
+            stmt.run([task.title, task.description, task.done, task.enddate, task.important,task.id]);
+            stmt.finalize();
+            deferred.resolve(true);
+        });
+        return deferred.promise;
+	};
+	TaskService.destroy = function(task){
+		console.log('delete');
+		var deferred = $q.defer();
+		db.serialize(function() {
+            var stmt = db.prepare("DELETE FROM task WHERE id=?");
+            stmt.run([task.id]);
+            stmt.finalize();
+            deferred.resolve(true);
+        });
+        return deferred.promise;
+	};
+
+	return TaskService;
+}]);
+
+app.controller('HeaderController', ['$scope', '$location', 'TaskService', function ScheduleController($scope, $location, TaskService){
+
+	
+	$scope.isActive = function (viewLocation) { 
+		return viewLocation === $location.path();
+	};
+
+}]);
+
+app.controller('FooterController', ['$scope', function FooterController($scope){
+
+	$scope.app_version = app_version;
+	$scope.schema_version = schema_version;
+
+}]);
+
+app.controller('ScheduleController', ['$scope', '$http', 'TaskService', 'ModalWindowBinder', function ScheduleController($scope, $http, TaskService, ModalWindowBinder){
+	
+
+	/** pagination **/
+	$scope.itemsPerPage = 10; // 10 rows
+    $scope.pagedItems = 5; // 5 links in pagination 
+    $scope.pg = {};
+    $scope.pg.page = 1;
+    $scope.dataCount = 0;
+    $scope.paginator = new Paginator($scope.itemsPerPage, $scope.pagedItems);
+	/***/
+	$scope.user ={
+		name: 'testing'
+	}
+
+	$scope.data = [];
+
+	//validation 
+    $scope.getSomeForm = {
+        title: {empty: false}
+        
+    };
+
+	$scope.fetch = function(){
+		
+
+		TaskService.count()
+        .then(function (data) {
+        	$scope.dataCount = parseInt(data);
+
+            $scope.pg = $scope.paginator.paginate($scope.pg.page, $scope.dataCount);
+
+            TaskService.fetch($scope.paginator.getOffset(), $scope.paginator.getLimit())
+	        .then(function (data) {
+	            $scope.data = data;
+	        });
+        });
+
+		
+	};
+	// force angular to pass the values from datepicker
+	$scope.form = {title : '', enddate : ''};
+	$("#datetimepicker1").on("dp.change",function (e) {
+		$scope.form.enddate = $('#enddate').val();
+	});
+	/*******************************************************/
+
+	$scope.save = function(form){
+		if($scope.isValid()){ 
+			TaskService.create(form).then(function (lastId) {
+				$scope.fetch();
+				form.title = null;
+				form.description = '';
+				form.enddate = '';
+			});
+		}
+
+	};
+	$scope.update = function(task){
+		console.log(task);
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+			form.title = '';
+			form.description = '';
+			form.done = 0;
+			form.enddate = '';
+		});
+
+	};
+
+	$scope.setDone = function($event, task){
+		var checkbox = $event.target;
+  		var action = checkbox.checked;
+		task.done = action;
+		$scope.update(task);
+	};
+	
+	$scope.erase = function(task){
+		TaskService.destroy(task).then(function (rez) {
+			$scope.fetch();
+		});
+	};
+
+	$scope.setImportant = function(task){
+		if(task.important === 1){
+			task.important = 0;
+		}else{
+			task.important = 1;
+		}
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+		});	
+	};
+	
+	$scope.fetch();
+	
+
+	//**** modal */
+	// dialog, we need one instance of the window
+    $scope.taskModal = {};
+    var dialogSettings = {
+        tmpl : '../html/dialog-edit.html?p='+Math.random(),
+        ctrl : 'TaskDialogController'
+    };
+    $scope.taskModal = new ModalWindowBinder.create(dialogSettings);
+
+    $scope.openModalEdit = function(task){
+        var thisScope = $scope;
+        $scope.taskModal.openDialog(task).result.then(
+            function (rez) {
+                 thisScope.search();
+              }, function () {
+               
+              }    
+        );
+    };
+
+    $scope.isValid = function (){
+    	
+        if($scope.form.title.length > 0){
+            $scope.getSomeForm.title.empty=false;
+            return true;
+        }else{
+            $scope.getSomeForm.title.empty=true;
+        }
+      
+        return false;
+    };
+
+    $scope.$watch('form.title', function(newValue, oldValue) { 
+    	if(newValue.length > 0){
+        	$scope.isValid();
+    	}
+    });
+	
+
+
+
+	/****** pagination **/
+	$scope.setPage = function(p){
+        $scope.pg.page = p;
+        $scope.fetch();
+    };
+
+    $scope.range = function (start, end) {
+        var ret = [];
+        if (!end) {
+            end = $scope.pg.end;
+            start = $scope.pg.start;
+        }
+        for (var i = start; i <= end; i++) {
+            ret.push(i);
+        }
+        return ret;
+    };
+
+    $scope.setNext = function(){
+        if($scope.pg.last!=$scope.pg.page){
+          $scope.setPage($scope.pg.next);
+        }
+    };
+
+    $scope.setPrev = function(){
+        if($scope.pg.page > 1){
+            $scope.setPage($scope.pg.prev);
+        }
+    };
+
+
+}]);
+
+/**
+ * Modal window
+ */
+
+app.controller('TaskDialogController',['$scope', '$modalInstance', '$http', 'TaskService', function TaskDialogController($scope, $modalInstance, $http, TaskService){
+	$scope.data = $scope.data || {
+        title: "Task Edit",
+        message: "",
+        task : {}
+    };
+
+
+     // end init
+    if($scope.entity.id > 0){
+        $scope.task = $scope.entity;
+    }
+
+    
+
+    $scope.save = function(){
+
+		$scope.task.enddate = $('#enddate2').val();
+		
+		TaskService.update($scope.task).then(function (rez) {
+			$scope.entity = {};
+            $modalInstance.close('cancel');
+		});
+		return false;
+	};
+
+    $scope.close = function() {
+        $modalInstance.close('cancel');
+    };
+
+
+}]);
+
+
+app.controller('DoneController', ['$scope', '$http', 'TaskService', 'ModalWindowBinder', function DoneController($scope, $http, TaskService, ModalWindowBinder){
+
+	/** pagination **/
+	$scope.itemsPerPage = 10; // 10 rows
+    $scope.pagedItems = 5; // 5 links in pagination 
+    $scope.pg = {};
+    $scope.pg.page = 1;
+    $scope.dataCount = 0;
+    $scope.paginator = new Paginator($scope.itemsPerPage, $scope.pagedItems);
+	/***/
+
+	$scope.data = [];
+
+	// force angular to pass the values from datepicker
+	$scope.form = {title : '', enddate : ''};
+	$("#datetimepicker1").on("dp.change",function (e) {
+		$scope.form.enddate = $('#enddate').val();
+	});
+	/*******************************************************/
+
+	$scope.fetch = function(){
+		
+
+		TaskService.countDone()
+        .then(function (data) {
+        	$scope.dataCount = parseInt(data);
+
+            $scope.pg = $scope.paginator.paginate($scope.pg.page, $scope.dataCount);
+
+            TaskService.fetchDone($scope.paginator.getOffset(), $scope.paginator.getLimit())
+	        .then(function (data) {
+	            $scope.data = data;
+	        });
+        });
+
+		
+	};
+
+	$scope.update = function(task){
+		console.log(task);
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+			form.title = '';
+			form.description = '';
+			form.done = 0;
+			form.enddate = '';
+		});
+
+	};
+
+	$scope.setDone = function($event, task){
+		var checkbox = $event.target;
+  		var action = checkbox.checked;
+		task.done = action;
+		$scope.update(task);
+	};
+	
+	$scope.erase = function(task){
+		TaskService.destroy(task).then(function (rez) {
+			$scope.fetch();
+		});
+	};
+
+	$scope.fetch();
+
+
+	//**** modal */
+	// dialog, we need one instance of the window
+    $scope.taskModal = {};
+    var dialogSettings = {
+        tmpl : '../html/dialog-edit.html?p='+Math.random(),
+        ctrl : 'TaskDialogController'
+    };
+    $scope.taskModal = new ModalWindowBinder.create(dialogSettings);
+
+    $scope.openModalEdit = function(task){
+        var thisScope = $scope;
+        $scope.taskModal.openDialog(task).result.then(
+            function (rez) {
+                 thisScope.search();
+              }, function () {
+               
+              }    
+        );
+    };
+
+
+    /****** pagination **/
+	$scope.setPage = function(p){
+        $scope.pg.page = p;
+        $scope.fetch();
+    };
+
+    $scope.range = function (start, end) {
+        var ret = [];
+        if (!end) {
+            end = $scope.pg.end;
+            start = $scope.pg.start;
+        }
+        for (var i = start; i <= end; i++) {
+            ret.push(i);
+        }
+        return ret;
+    };
+
+    $scope.setNext = function(){
+        if($scope.pg.last!=$scope.pg.page){
+          $scope.setPage($scope.pg.next);
+        }
+    };
+
+    $scope.setPrev = function(){
+        if($scope.pg.page > 1){
+            $scope.setPage($scope.pg.prev);
+        }
+    };
+}]);
+
+
+
+app.controller('ImportantController', ['$scope', '$http', 'TaskService', 'ModalWindowBinder', function ImportantController($scope, $http, TaskService, ModalWindowBinder){
+
+	/** pagination **/
+	$scope.itemsPerPage = 10; // 10 rows
+    $scope.pagedItems = 5; // 5 links in pagination 
+    $scope.pg = {};
+    $scope.pg.page = 1;
+    $scope.dataCount = 0;
+    $scope.paginator = new Paginator($scope.itemsPerPage, $scope.pagedItems);
+	/***/
+
+	$scope.data = [];
+
+	
+
+	$scope.fetch = function(){
+		
+
+		TaskService.countImportant()
+        .then(function (data) {
+        	$scope.dataCount = parseInt(data);
+
+            $scope.pg = $scope.paginator.paginate($scope.pg.page, $scope.dataCount);
+
+            TaskService.fetchImportant($scope.paginator.getOffset(), $scope.paginator.getLimit())
+	        .then(function (data) {
+	            $scope.data = data;
+	        });
+        });
+
+		
+	};
+
+	$scope.update = function(task){
+		console.log(task);
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+			form.title = '';
+			form.description = '';
+			form.done = 0;
+			form.enddate = '';
+		});
+
+	};
+
+	$scope.setDone = function($event, task){
+		var checkbox = $event.target;
+  		var action = checkbox.checked;
+		task.done = action;
+		$scope.update(task);
+	};
+	
+	$scope.erase = function(task){
+		TaskService.destroy(task).then(function (rez) {
+			$scope.fetch();
+		});
+	};
+
+	$scope.setImportant = function(task){
+		if(task.important === 1){
+			task.important = 0;
+		}else{
+			task.important = 1;
+		}
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+		});	
+	};
+
+	$scope.fetch();
+
+
+	//**** modal */
+	// dialog, we need one instance of the window
+    $scope.taskModal = {};
+    var dialogSettings = {
+        tmpl : '../html/dialog-edit.html?p='+Math.random(),
+        ctrl : 'TaskDialogController'
+    };
+    $scope.taskModal = new ModalWindowBinder.create(dialogSettings);
+
+    $scope.openModalEdit = function(task){
+        var thisScope = $scope;
+        $scope.taskModal.openDialog(task).result.then(
+            function (rez) {
+                 thisScope.search();
+              }, function () {
+               
+              }    
+        );
+    };
+
+
+    /****** pagination **/
+	$scope.setPage = function(p){
+        $scope.pg.page = p;
+        $scope.fetch();
+    };
+
+    $scope.range = function (start, end) {
+        var ret = [];
+        if (!end) {
+            end = $scope.pg.end;
+            start = $scope.pg.start;
+        }
+        for (var i = start; i <= end; i++) {
+            ret.push(i);
+        }
+        return ret;
+    };
+
+    $scope.setNext = function(){
+        if($scope.pg.last!=$scope.pg.page){
+          $scope.setPage($scope.pg.next);
+        }
+    };
+
+    $scope.setPrev = function(){
+        if($scope.pg.page > 1){
+            $scope.setPage($scope.pg.prev);
+        }
+    };
+}]);
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+	"name": "get-some",
+	"main": "./app/html/index.html",
+	"node-main": "./app/js/nw-main.js",
+	"window": {
+		"title": "Get Some",
+		"toolbar": true,
+		"frame" : true,
+		"width" : 800,
+		"height" : 900,
+		"icon": "./app/checked-16.png"
+	},
+	"author": "Kristian Beres",
+	"license": "MIT",
+	"homepage": "katropine.com",
+	"dependencies": {
+		"sqlite3": "0.10.x",
+		"moment" : "2.8.3"
+	},
+	"keywords": [
+	    "todo",
+	    "tasks"
+	    
+  	]
+}

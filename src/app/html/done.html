@@ -1,0 +1,69 @@
+
+	<div class="panel panel-primary">
+	    <div class="panel-heading">
+	        <h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Done! ({{dataCount}})</h3>
+	    </div>
+	    <div class="panel-body">
+	        <div id="shieldui-grid1" class="sui-grid sui-grid-core">
+	        	<div class="sui-gridheader">
+	        	<table class="sui-table">
+	        	<thead>
+	        		<tr class="sui-columnheader">
+	        			<th class="sui-headercell">
+	        				<a class="sui-link" href="#">Title</a>
+	        			</th>
+	        			<th class="sui-headercell">
+	        				<a class="sui-link" href="#">Descrition</a>
+	        			</th>
+	        			<th class="sui-headercell" style="width:60px">
+	        				<a class="sui-link" href="#">Done</a>
+	        			</th>
+	        			<th class="sui-headercell" style="width:90px">
+	        				<a class="sui-link" href="#">End Date</a>
+	        			</th>
+	        			<th class="sui-headercell" style="width:120px">
+	        				<a class="sui-link" href="#">Created</a>
+	        			</th>
+	        			<th class="sui-headercell" style="width:40px">
+	        				
+	        			</th>
+	        		</tr>
+	        	</thead>
+	        	<tbody class="sui-hide">
+	        		<tr>
+	        			<td></td>
+	        			<td></td>
+	        			<td></td>
+	        			<td></td>
+	        			<td></td>
+	        			<td></td>
+	        		</tr>
+	        	</tbody>
+	        </table>
+	    	</div>
+	    	<div class="sui-gridcontent">
+	    		<table class="sui-table">
+	    			<tbody>
+	    				<tr class="sui-row" ng-repeat="task in data">
+	    					<td class="sui-cell"><span class="glyphicon glyphicon-th-list"></span> &nbsp; <button class="btn btn-transparent" ng-click="openModalEdit(task)">{{task.title}}</button></td>
+	    					<td class="sui-cell"><button class="btn btn-transparent" ng-click="openModalEdit(task)">{{task.description}}</button></td>
+	    					<td class="sui-cell" style="width:60px"><input type="checkbox" ng-checked="task.done" ng-model="done" ng-click="setDone($event, task)" ng-true-value="1" ng-false-value="0"></td>
+	    					<td class="sui-cell" style="width:90px">{{task.enddate|fromNow}}</td>
+	    					<td class="sui-cell" style="width:120px">{{task.created|date:'dd-MM-yyyy HH:mm'}}</td>
+	    					<td class="sui-cell" style="width:40px"><button type="button" ng-click="erase(task)" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></button></td>
+	    				</tr>
+	    			</tbody>
+	    		</table>
+	    </div>
+	    
+	</div>
+	<div>
+		<ul class="pagination pagination-sm">
+		    <li ng-class="(1==pg.page)?'disabled':''"><a ui-sref ng-click="setPrev()">&laquo;</a></li>
+		    <li ng-class="(n==pg.page)?'active':''" ng-repeat="n in range(pagedItems)" ng-click="setPage(n)">
+		        <a ui-sref ng-bind="n">1</a>
+		    </li>
+		    <li ng-class="(pg.last==pg.page)?'disabled':''"><a ui-sref ng-click="setNext()">&raquo;</a></li>
+		</ul>
+	</div>
+

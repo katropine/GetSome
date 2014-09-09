@@ -1,0 +1,110 @@
+
+	<div class="panel panel-primary">
+	    <div class="panel-heading">
+	        <h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> To Do! ({{dataCount}})</h3>
+	    </div>
+	    <div class="panel-body">
+	        <div id="shieldui-grid1" class="sui-grid sui-grid-core">
+	        	<div class="sui-gridheader">
+	        	<table class="sui-table">
+	        	<thead>
+	        		<tr class="sui-columnheader">
+	        			<th class="sui-headercell">
+	        				<a class="sui-link" href="#">Title</a>
+	        			</th>
+	        			<th class="sui-headercell">
+	        				<a class="sui-link" href="#">Descrition</a>
+	        			</th>
+	        			<th class="sui-headercell" style="width:60px">
+	        				<a class="sui-link" href="#">Done</a>
+	        			</th>
+	        			<th class="sui-headercell" style="width:90px">
+	        				<a class="sui-link" href="#">End Date</a>
+	        			</th>
+	        			<th class="sui-headercell" style="width:120px">
+	        				<a class="sui-link" href="#">Created</a>
+	        			</th>
+	        			<th class="sui-headercell" style="width:40px">
+	        				
+	        			</th>
+	        		</tr>
+	        	</thead>
+	        	<tbody class="sui-hide">
+	        		<tr>
+	        			<td></td>
+	        			<td></td>
+	        			<td></td>
+	        			<td></td>
+	        			<td></td>
+	        			<td></td>
+	        		</tr>
+	        	</tbody>
+	        </table>
+	    	</div>
+	    	<div class="sui-gridcontent">
+	    		<table class="sui-table">
+	    			<tbody>
+	    				<tr class="sui-row" ng-repeat="task in data" ng-class="{'red': task.important==1}">
+	    					<td class="sui-cell">
+	    						<button class="btn btn-transparent" ng-click="setImportant(task)"><span class="glyphicon glyphicon-exclamation-sign"></span></button> &nbsp; <button class="btn btn-transparent" ng-click="openModalEdit(task)">{{task.title}}</button></td>
+	    					<td class="sui-cell"><button class="btn btn-transparent" ng-click="openModalEdit(task)">{{task.description}}</button></td>
+	    					<td class="sui-cell" style="width:60px"><input type="checkbox" ng-checked="task.done" ng-model="done" ng-click="setDone($event, task)" ng-true-value="1" ng-false-value="0"></td>
+	    					<td class="sui-cell" style="width:90px">{{task.enddate|fromNow}}</td>
+	    					<td class="sui-cell" style="width:120px">{{task.created|date:'dd-MM-yyyy HH:mm'}}</td>
+	    					<td class="sui-cell" style="width:40px"><button type="button" ng-click="erase(task)" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></button></td>
+	    				</tr>
+	    			</tbody>
+	    		</table>
+	    </div>
+	</div>
+	<div>
+		<ul class="pagination pagination-sm">
+		    <li ng-class="(1==pg.page)?'disabled':''"><a ui-sref ng-click="setPrev()">&laquo;</a></li>
+		    <li ng-class="(n==pg.page)?'active':''" ng-repeat="n in range(pagedItems)" ng-click="setPage(n)">
+		        <a ui-sref ng-bind="n">1</a>
+		    </li>
+		    <li ng-class="(pg.last==pg.page)?'disabled':''"><a ui-sref ng-click="setNext()">&raquo;</a></li>
+		</ul>
+	</div>
+	<div id="message"></div>
+	<br>
+	<div>
+	<form role="form" id="getSomeForm" name="getSomeForm">
+
+		<div class="form-inline">
+	        
+		        <div class="form-group has-feedback" ng-class="{'has-error': getSomeForm.title.empty==1}">
+		        	<input id="title" class="form-control" name="title" type="text" ng-model="form.title" placeholder="Title">
+		        	<span ng-show="getSomeForm.title.empty" class="glyphicon glyphicon-ok form-control-feedback"></span>
+				</div>
+			
+			<div class="form-group">
+		        <div class="input-group">
+					<div class="input-group date" id="datetimepicker1">
+		                <input type="text" id="enddate" class="form-control" readonly="readonly" ng-model="form.enddate" ng-Change="dateChanged()" data-date-format="YYYY-MM-DD">
+		                <span class="input-group-addon">
+		                	<span class="glyphicon glyphicon-calendar"></span>
+		                </span>
+		            </div>
+				</div>
+			</div>
+			
+		</div>		
+
+	    <div class="form-group">
+	        <input id="description" class="form-control" name="description" type="text" ng-model="form.description" placeholder="Description">
+	    </div>
+	    
+	    <button class="btn btn-default" id="save" ng-click="save(form)" type="button">
+			<span class="glyphicon glyphicon-plus"></span>
+	    	Add</button>
+
+	</form>
+	</div>
+	<script type="text/javascript">
+	$('#datetimepicker1').datetimepicker({
+		useCurrent: true,
+		pickTime: false
+	});
+	</script>
+		
