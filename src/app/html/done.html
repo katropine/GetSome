@@ -13,7 +13,7 @@
 	        				<a class="sui-link" href="#">Title</a>
 	        			</th>
 	        			<th class="sui-headercell">
-	        				<a class="sui-link" href="#">Descrition</a>
+	        				<a class="sui-link" href="#">Description</a>
 	        			</th>
 	        			<th class="sui-headercell" style="width:60px">
 	        				<a class="sui-link" href="#">Done</a>
@@ -47,7 +47,10 @@
 	    				<tr class="sui-row" ng-repeat="task in data">
 	    					<td class="sui-cell"><span class="glyphicon glyphicon-th-list"></span> &nbsp; <button class="btn btn-transparent" ng-click="openModalEdit(task)">{{task.title}}</button></td>
 	    					<td class="sui-cell"><button class="btn btn-transparent" ng-click="openModalEdit(task)">{{task.description}}</button></td>
-	    					<td class="sui-cell" style="width:60px"><input type="checkbox" ng-checked="task.done" ng-model="done" ng-click="setDone($event, task)" ng-true-value="1" ng-false-value="0"></td>
+	    					<td class="sui-cell text-center" style="width:60px">
+	    						<button type="button" ng-if="task.done==0" class="btn btn-transparent" ng-click="setDone(task)"><span class="glyphicon glyphicon-unchecked"></span></button>
+								<button type="button" ng-if="task.done==1" class="btn btn-transparent" ng-click="setDone(task)"><span class="glyphicon glyphicon-check"></span></button>
+	    					</td>
 	    					<td class="sui-cell" style="width:90px">{{task.enddate|fromNow}}</td>
 	    					<td class="sui-cell" style="width:120px">{{task.created|date:'dd-MM-yyyy HH:mm'}}</td>
 	    					<td class="sui-cell" style="width:40px"><button type="button" ng-click="erase(task)" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></button></td>
@@ -57,7 +60,7 @@
 	    </div>
 	    
 	</div>
-	<div>
+	<div class="text-center">
 		<ul class="pagination pagination-sm">
 		    <li ng-class="(1==pg.page)?'disabled':''"><a ui-sref ng-click="setPrev()">&laquo;</a></li>
 		    <li ng-class="(n==pg.page)?'active':''" ng-repeat="n in range(pagedItems)" ng-click="setPage(n)">
