@@ -130,6 +130,9 @@
 .red .btn:hover{
   color: #ffffff;
 }
+.inprogress{
+	background: url('inprogress.png') repeat;
+}
 table,
 table th,
 table td, 

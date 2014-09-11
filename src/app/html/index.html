@@ -11,11 +11,11 @@
 
 		var db = new sqlite3.Database('./app/db/getsome_db.sqlite');
 		
-		var app_version = 1.3;
-		var schema_version = 0;
+		var app_version = 1.4;
+		var schema_version = 1;
 
 		db.serialize(function() {
-			db.run("CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, done BOOLEAN,enddate DATE, created DATETIME, important BOOLEAN)");
+			db.run("CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, done BOOLEAN,enddate DATE, created DATETIME, important BOOLEAN DEFAULT 0, inprogress BOOLEAN DEFAULT 0)");
 			db.run("CREATE TABLE IF NOT EXISTS dbinfo (id INTEGER PRIMARY KEY AUTOINCREMENT, schema_version INTEGER DEFAULT 0, app_version REAL DEFAULT 1.0)");
 			db.run("CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY AUTOINCREMENT, theme TEXT DEFAULT 'dark')");
 			
@@ -31,7 +31,11 @@
             		stmt.run([schema_version,app_version]);
             		stmt.finalize();
 			 	}else{
+			 		
 			 		if(rows.schema_version < schema_version){
+			 			if(rows.schema_version < 1){
+			 				db.run("ALTER TABLE task ADD inprogress BOOLEAN DEFAULT 0");
+			 			 }
 						// updates to schema 
 
 			 			var stmt = db.prepare("UPDATE dbinfo SET schema_version = ?");
@@ -44,6 +48,7 @@
 		            		stmt.run(['dark']);
 		            		stmt.finalize();
 			 			}
+			 			
 			 			// update version
 			 			var stmt = db.prepare("UPDATE dbinfo SET app_version = ?");
 			 			stmt.run([app_version]);
@@ -110,6 +115,11 @@
 					<span class="glyphicon glyphicon-unchecked"></span>
 					ToDo</a>
 			</li>
+			<li ng-class="{active: isActive('/inprogress')}">
+				<a href="#inprogress"  data-toggle="tab">
+					<span class="glyphicon glyphicon-play"></span>
+					In Progress</a>
+			</li>
 			<li ng-class="{active: isActive('/important')}">
 				<a href="#important"  data-toggle="tab">
 					<span class="glyphicon glyphicon-exclamation-sign"></span>
@@ -161,6 +171,11 @@ app.config(function($routeProvider) {
         {
             templateUrl: "../html/important.html",
             controller: "ImportantController"
+        })
+        .when('/inprogress',
+        {
+            templateUrl: "../html/inprogress.html",
+            controller: "InprogressController"
         })
 });
 
@@ -220,12 +235,26 @@ app.factory('TaskService',[ '$q', function($q) {
         });
         return deferred.promise;
 	};
+	TaskService.fetchInProgress = function(offset, limit){
+		var deferred = $q.defer();
+		db.all("SELECT * FROM task WHERE inprogress=1 AND done=0 ORDER BY created DESC LIMIT ?,?", [offset, limit], function(err, rows) {
+            deferred.resolve(rows);
+        });
+        return deferred.promise;
+	};	
+	TaskService.countInProgress = function(){
+		var deferred = $q.defer();
+		db.get("SELECT COUNT(*) AS cnt FROM task WHERE inprogress=1 AND done=0", function(err, rows) {
+            deferred.resolve(rows.cnt);
+        });
+        return deferred.promise;
+	};
 	TaskService.create = function(form){
 		var self = this;
 		var deferred = $q.defer();
 		db.serialize(function() {
-          	var stmt = db.prepare("INSERT INTO task (title,description,done,enddate,created,important) VALUES (?,?,?,?,?,?)");
-          	stmt.run([form.title, form.description, 0,form.enddate, new Date(),0]);
+          	var stmt = db.prepare("INSERT INTO task (title,description,done,enddate,created,important,inprogress) VALUES (?,?,?,?,?,?,?)");
+          	stmt.run([form.title, form.description, 0,form.enddate, new Date(),0,0]);
           	stmt.finalize();
         	deferred.resolve(this.lastID);
         });
@@ -234,8 +263,8 @@ app.factory('TaskService',[ '$q', function($q) {
 	TaskService.update = function(task){
 		var deferred = $q.defer();
 		db.serialize(function() {
-            var stmt = db.prepare("UPDATE task SET title=?, description=?, done=?, enddate=?, important=? WHERE id=?");
-            stmt.run([task.title, task.description, task.done, task.enddate, task.important,task.id]);
+            var stmt = db.prepare("UPDATE task SET title=?, description=?, done=?, enddate=?, important=?, inprogress=? WHERE id=?");
+            stmt.run([task.title, task.description, task.done, task.enddate, task.important, task.inprogress, task.id]);
             stmt.finalize();
             deferred.resolve(true);
         });
@@ -410,6 +439,7 @@ app.controller('ScheduleController', ['$scope', '$http', 'TaskService', 'ModalWi
 			task.done = 0;
 		}else{
 			task.done = 1;
+			task.inprogress = 0;
 		}
 		
 		TaskService.update(task).then(function (rez) {
@@ -417,6 +447,18 @@ app.controller('ScheduleController', ['$scope', '$http', 'TaskService', 'ModalWi
 		});
 	};
 	
+	$scope.setInProgress = function(task){
+		if(task.inprogress==1){
+			task.inprogress = 0;
+		}else{
+			task.inprogress = 1;
+		}
+		
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+		});
+	};
+
 	$scope.erase = function(task){
 		TaskService.destroy(task).then(function (rez) {
 			$scope.fetch();
@@ -603,6 +645,7 @@ app.controller('DoneController', ['$scope', '$http', 'TaskService', 'ModalWindow
 			task.done = 0;
 		}else{
 			task.done = 1;
+			task.inprogress = 0;
 		}
 		
 		TaskService.update(task).then(function (rez) {
@@ -722,6 +765,7 @@ app.controller('ImportantController', ['$scope', '$http', 'TaskService', 'ModalW
 			task.done = 0;
 		}else{
 			task.done = 1;
+			task.inprogress = 0;
 		}
 		
 		TaskService.update(task).then(function (rez) {
@@ -746,6 +790,146 @@ app.controller('ImportantController', ['$scope', '$http', 'TaskService', 'ModalW
 		});	
 	};
 
+	$scope.fetch();
+
+
+	//**** modal */
+	// dialog, we need one instance of the window
+    $scope.taskModal = {};
+    var dialogSettings = {
+        tmpl : '../html/dialog-edit.html?p='+Math.random(),
+        ctrl : 'TaskDialogController'
+    };
+    $scope.taskModal = new ModalWindowBinder.create(dialogSettings);
+
+    $scope.openModalEdit = function(task){
+        var thisScope = $scope;
+        $scope.taskModal.openDialog(task).result.then(
+            function (rez) {
+                 thisScope.fetch();
+              }, function () {
+               
+              }    
+        );
+    };
+
+
+    /****** pagination **/
+	$scope.setPage = function(p){
+        $scope.pg.page = p;
+        $scope.fetch();
+    };
+
+    $scope.range = function (start, end) {
+        var ret = [];
+        if (!end) {
+            end = $scope.pg.end;
+            start = $scope.pg.start;
+        }
+        for (var i = start; i <= end; i++) {
+            ret.push(i);
+        }
+        return ret;
+    };
+
+    $scope.setNext = function(){
+        if($scope.pg.last!=$scope.pg.page){
+          $scope.setPage($scope.pg.next);
+        }
+    };
+
+    $scope.setPrev = function(){
+        if($scope.pg.page > 1){
+            $scope.setPage($scope.pg.prev);
+        }
+    };
+}]);
+
+
+app.controller('InprogressController', ['$scope', '$http', 'TaskService', 'ModalWindowBinder', function ImportantController($scope, $http, TaskService, ModalWindowBinder){
+
+	/** pagination **/
+	$scope.itemsPerPage = 10; // 10 rows
+    $scope.pagedItems = 5; // 5 links in pagination 
+    $scope.pg = {};
+    $scope.pg.page = 1;
+    $scope.dataCount = 0;
+    $scope.paginator = new Paginator($scope.itemsPerPage, $scope.pagedItems);
+	/***/
+
+	$scope.data = [];
+
+	
+
+	$scope.fetch = function(){
+		
+
+		TaskService.countInProgress()
+        .then(function (data) {
+        	$scope.dataCount = parseInt(data);
+
+            $scope.pg = $scope.paginator.paginate($scope.pg.page, $scope.dataCount);
+
+            TaskService.fetchInProgress($scope.paginator.getOffset(), $scope.paginator.getLimit())
+	        .then(function (data) {
+	            $scope.data = data;
+	        });
+        });
+
+		
+	};
+
+	$scope.update = function(task){
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+			form.title = '';
+			form.description = '';
+			form.done = 0;
+			form.enddate = '';
+		});
+
+	};
+
+	$scope.setDone = function(task){
+		if(task.done==1){
+			task.done = 0;
+		}else{
+			task.done = 1;
+			task.inprogress = 0;
+		}
+		
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+		});
+	};
+	
+	$scope.erase = function(task){
+		TaskService.destroy(task).then(function (rez) {
+			$scope.fetch();
+		});
+	};
+
+	$scope.setImportant = function(task){
+		if(task.important === 1){
+			task.important = 0;
+		}else{
+			task.important = 1;
+		}
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+		});	
+	};
+	$scope.setInProgress = function(task){
+		if(task.inprogress==1){
+			task.inprogress = 0;
+		}else{
+			task.inprogress = 1;
+		}
+		
+		TaskService.update(task).then(function (rez) {
+			$scope.fetch();
+		});
+	};
 	$scope.fetch();
 
 
