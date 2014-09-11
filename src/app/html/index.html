@@ -4,7 +4,6 @@
     <title>GetSome... TODOs</title>
     <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="../css/datepicker.css" rel="stylesheet" type="text/css">
-    <link href="../css/local.css" rel="stylesheet" type="text/css">
     <script>
     	var moment = require('moment');
     	var sqlite3 = require('sqlite3').verbose();
@@ -12,12 +11,13 @@
 
 		var db = new sqlite3.Database('./app/db/getsome_db.sqlite');
 		
-		var app_version = 1.2;
+		var app_version = 1.3;
 		var schema_version = 0;
 
 		db.serialize(function() {
 			db.run("CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, done BOOLEAN,enddate DATE, created DATETIME, important BOOLEAN)");
 			db.run("CREATE TABLE IF NOT EXISTS dbinfo (id INTEGER PRIMARY KEY AUTOINCREMENT, schema_version INTEGER DEFAULT 0, app_version REAL DEFAULT 1.0)");
+			db.run("CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY AUTOINCREMENT, theme TEXT DEFAULT 'dark')");
 			
 		});
 		//upgrades
@@ -39,6 +39,11 @@
             			stmt.finalize();
 			 		}
 			 		if(rows.app_version < app_version){
+			 			if(rows.app_version == 1.2){
+			 				var stmt = db.prepare("INSERT INTO settings (theme) VALUES (?)");
+		            		stmt.run(['dark']);
+		            		stmt.finalize();
+			 			}
 			 			// update version
 			 			var stmt = db.prepare("UPDATE dbinfo SET app_version = ?");
 			 			stmt.run([app_version]);
@@ -49,6 +54,8 @@
 				
 	    	});
 	    });
+		
+        
 		// Reference to window and tray
 	    var win = gui.Window.get();
 	    var tray;
@@ -89,10 +96,9 @@
 	    win.on('minimize', function() {
 	        this.hide();
 	    });
-	 	    
-
 
     </script>
+    <link ng-controller="ElementController" href="../css/local-{{theme}}.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 <div class="container-fluid">
@@ -121,6 +127,7 @@
 	</div>
 	<footer ng-controller="FooterController">
 		<p class="text-center">GetSome v{{app_version}}.{{schema_version}} by www.katropine.com license MIT</p>
+		<p class="text-center"><button class="btn btn-default btn-xs" ng-click="setTheme('light')">light</button> | <button class="btn btn-default btn-xs" ng-click="setTheme('dark')">dark</button></p>
 	</footer>
 </div>
 <script src="../js/jquery.js" type="text/javascript"></script>
@@ -248,6 +255,61 @@ app.factory('TaskService',[ '$q', function($q) {
 	return TaskService;
 }]);
 
+app.factory('SettingsService', ['$q', function SettingsService($q){
+
+	var SettingsService = {};
+
+	SettingsService.update = function(settings){
+		var deferred = $q.defer();
+		db.serialize(function() {
+	        var stmt = db.prepare("UPDATE settings SET theme=? WHERE id=1");
+	        stmt.run([settings.theme]);
+	        stmt.finalize();
+	        deferred.resolve(true);
+	    });
+	    return deferred.promise;
+	};
+	SettingsService.fetch = function(){
+		var deferred = $q.defer();
+		db.get("SELECT * FROM settings WHERE id=1", function(err, rows) {
+            deferred.resolve(rows);
+        });
+        return deferred.promise;
+	};
+
+	return SettingsService;
+
+}]);
+
+/**
+ *	Broadcaster - broadcast value from one controller to another
+ */
+app.run(function($rootScope) {
+    /*
+        Receive emitted message and broadcast it.
+        Event names must be distinct or browser will blow up!
+    */
+    $rootScope.$on('handleEmit', function(event, args) {
+        $rootScope.$broadcast('handleBroadcast', args);
+    });
+});
+/****************************************************************/
+
+app.controller('ElementController', ['$scope', 'SettingsService', function ScheduleController($scope, SettingsService){
+
+	$scope.theme = 'dark';
+	SettingsService.fetch().then(function(data){
+		$scope.theme = data.theme;
+	});
+	/**
+	 * Set the broadcasted value..... see FooterController and 
+	 */
+	$scope.$on('handleBroadcast', function(event, args) {
+        $scope.theme = args.theme;
+    });  
+	
+}]);
+
 app.controller('HeaderController', ['$scope', '$location', 'TaskService', function ScheduleController($scope, $location, TaskService){
 
 	
@@ -257,10 +319,19 @@ app.controller('HeaderController', ['$scope', '$location', 'TaskService', functi
 
 }]);
 
-app.controller('FooterController', ['$scope', function FooterController($scope){
+app.controller('FooterController', ['$scope', 'SettingsService', function FooterController($scope, SettingsService){
 
 	$scope.app_version = app_version;
 	$scope.schema_version = schema_version;
+	$scope.settings = SettingsService.fetch();
+
+	$scope.setTheme = function(theme){
+		$scope.settings.theme = theme;
+		SettingsService.update($scope.settings).then(function (data) {
+			// bradcast new value
+			$scope.$emit('handleEmit', {theme: $scope.settings.theme});
+		});
+	};
 
 }]);
 
@@ -379,7 +450,7 @@ app.controller('ScheduleController', ['$scope', '$http', 'TaskService', 'ModalWi
         var thisScope = $scope;
         $scope.taskModal.openDialog(task).result.then(
             function (rez) {
-                 thisScope.search();
+                 thisScope.fetch();
               }, function () {
                
               }    
@@ -561,7 +632,7 @@ app.controller('DoneController', ['$scope', '$http', 'TaskService', 'ModalWindow
         var thisScope = $scope;
         $scope.taskModal.openDialog(task).result.then(
             function (rez) {
-                 thisScope.search();
+                 thisScope.fetch();
               }, function () {
                
               }    
@@ -691,7 +762,7 @@ app.controller('ImportantController', ['$scope', '$http', 'TaskService', 'ModalW
         var thisScope = $scope;
         $scope.taskModal.openDialog(task).result.then(
             function (rez) {
-                 thisScope.search();
+                 thisScope.fetch();
               }, function () {
                
               }    
