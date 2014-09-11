@@ -1,0 +1,140 @@
+.sui-grid-core {
+    border-collapse: collapse;
+    border-style: none solid solid;
+    border-width: 1px;
+    font-family: "Arial,Helvetica,sans-serif";
+    font-size: 14px;
+    height: auto;
+    outline: 0 none;
+}
+.sui-grid-core .sui-gridheader {
+    background-attachment: scroll;
+    background-position: 0 0;
+    background-repeat: repeat-x;
+    overflow-x: hidden;
+}
+.sui-grid-core .sui-table {
+    border: 0 none;
+    border-collapse: collapse;
+    border-spacing: 0;
+    empty-cells: show;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.sui-grid-core .sui-selectable, .sui-grid-core .sui-non-selectable {
+    -moz-user-select: none;
+}
+.sui-grid-core .sui-table-ie7 {
+    border: 0 none;
+    border-spacing: 0;
+    empty-cells: show;
+    table-layout: fixed;
+}
+.sui-grid-core .sui-hide {
+    display: none;
+}
+.sui-grid-core .sui-gridcontent {
+    outline: medium none;
+    overflow: hidden;
+}
+.sui-grid-core .sui-scroller {
+    overflow: hidden;
+}
+.sui-grid-core .sui-scroller .sui-content {
+    float: left;
+    overflow-x: auto;
+    overflow-y: scroll;
+}
+.sui-grid-core .sui-scroller .sui-virtualized.sui-content {
+    float: none;
+}
+.sui-grid-core .sui-gridheader .sui-headercell {
+    border-width: 0 0 0 1px;
+}
+.sui-grid-core tr td:first-child, .sui-grid-core tr th:first-child {
+    border-left-style: none;
+    border-left-width: 0;
+}
+.sui-grid-core .sui-cell {
+    border-collapse: collapse;
+    border-style: solid;
+    border-width: 0 0 1px 1px;
+    display: table-cell;
+    overflow: hidden;
+    padding: 0.6em;
+    vertical-align: middle;
+    white-space: normal;
+    width: auto;
+}
+.sui-grid-core .sui-detail-cell {
+    border-collapse: collapse;
+    border-style: solid;
+    border-width: 0 0 1px 1px;
+    display: table-cell;
+    overflow: hidden;
+    vertical-align: middle;
+    white-space: normal;
+    width: auto;
+}
+.sui-grid-core .sui-headercell {
+    border-collapse: collapse;
+    font-size: 1.1em;
+    font-weight: 700;
+    overflow: hidden;
+    padding: 0.518em;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+.sui-grid {
+    border-color: #D4D4D4;
+    border-top: medium none #D4D4D4;
+    color: #000000;
+}
+.sui-grid .sui-gridheader {
+    border-bottom: 2px solid #4fa7ef;
+    border-top: 1px solid #D4D4D4;
+    color: #000000;
+}
+.sui-grid .sui-headercell a {
+    color: #000000;
+}
+.sui-grid .sui-headercontent {
+    border-color: #D4D4D4;
+}
+.sui-grid .sui-headercell, .sui-grid .sui-indent-cell {
+    background-color: #ffffff;
+    border-left: 1px solid #D4D4D4;
+    border-style: solid none none solid;
+    border-top: 0 solid #D4D4D4;
+}
+.sui-grid .sui-gridcontent {
+    background-color: #ffffff;
+}
+.sui-grid .sui-cell, .sui-grid .sui-detail-cell {
+	border-color: #D4D4D4;
+}
+.btn-transparent{
+	background-color: transparent;
+	margin: 0;
+	padding: 0;
+    font-family: "Tahoma", Arial,Helvetica,sans-serif;
+    font-size: 11px;
+}
+.red,
+.btn .red{
+  background-color: #D27373;
+  color: #ffffff;
+}
+.red .btn:hover{
+  color: #ffffff;
+}
+table,
+table th,
+table td, 
+table td a,
+table td btn{
+    font-family: "Tahoma", Arial,Helvetica,sans-serif;
+    font-size: 11px;
+}
