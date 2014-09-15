@@ -25,7 +25,7 @@
                     <div class="form-group">
                         <lable for="">End Date</label>
                         <div class="input-group date" id="datetimepicker2">
-                            <input type="text" id="enddate2" class="form-control" ng-model="task.enddate" data-date-format="YYYY-MM-DD">
+                            <input type="text" id="enddate2" class="form-control" ng-model="task.enddate" data-date-format="YYYY-MM-DD HH:mm:ss">
                             <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
                             </span>
                         </div>
@@ -42,8 +42,6 @@
 </div>
 <script type="text/javascript">
 $('#datetimepicker2').datetimepicker({
-    useCurrent: true,
-    pickTime: false
+    useCurrent: true
 });
-
 </script>

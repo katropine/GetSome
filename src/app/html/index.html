@@ -11,11 +11,11 @@
 
 		var db = new sqlite3.Database('./app/db/getsome_db.sqlite');
 		
-		var app_version = 1.4;
-		var schema_version = 1;
+		var app_version = 1.5;
+		var schema_version = 2;
 
 		db.serialize(function() {
-			db.run("CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, done BOOLEAN,enddate DATE, created DATETIME, important BOOLEAN DEFAULT 0, inprogress BOOLEAN DEFAULT 0)");
+			db.run("CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, done BOOLEAN,enddate DATETIME, created DATETIME, important BOOLEAN DEFAULT 0, inprogress BOOLEAN DEFAULT 0)");
 			db.run("CREATE TABLE IF NOT EXISTS dbinfo (id INTEGER PRIMARY KEY AUTOINCREMENT, schema_version INTEGER DEFAULT 0, app_version REAL DEFAULT 1.0)");
 			db.run("CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY AUTOINCREMENT, theme TEXT DEFAULT 'dark')");
 			
@@ -35,6 +35,9 @@
 			 		if(rows.schema_version < schema_version){
 			 			if(rows.schema_version < 1){
 			 				db.run("ALTER TABLE task ADD inprogress BOOLEAN DEFAULT 0");
+			 			}
+			 			if(rows.schema_version < 2){
+			 				db.run("ALTER TABLE task MODIFY enddate DATETIME");
 			 			 }
 						// updates to schema 
 
@@ -142,6 +145,8 @@
 </div>
 <script src="../js/jquery.js" type="text/javascript"></script>
 <script src="../js/bootstrap.js" type="text/javascript"></script>
+<script src="../js/collapse.js" type="text/javascript"></script>
+<script src="../js/transition.js" type="text/javascript"></script>
 <script src="../js/angular.js" type="text/javascript"></script>
 <script src="../js/angular-route.js" type="text/javascript"></script>
 <script src="../js/angular-modalwindowbinder.js" type="text/javascript"></script>

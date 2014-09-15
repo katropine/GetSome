@@ -88,10 +88,13 @@
 			<div class="form-group">
 		        <div class="input-group">
 					<div class="input-group date" id="datetimepicker1">
-		                <input type="text" id="enddate" class="form-control" readonly="readonly" ng-model="form.enddate" ng-Change="dateChanged()" data-date-format="YYYY-MM-DD">
+		                <span class="input-group-addon datepickerbutton">
+					        <span class="glyphicon glyphicon-calendar"></span>
+					    </span>
+		                <input type="text" id="enddate" class="form-control" readonly="readonly" ng-model="form.enddate"  data-date-format="YYYY-MM-DD HH:mm:ss">
 		                <span class="input-group-addon">
-		                	<span class="glyphicon glyphicon-calendar"></span>
-		                </span>
+					        <span class="glyphicon glyphicon-remove"></span>
+					    </span>
 		            </div>
 				</div>
 			</div>
@@ -109,9 +112,13 @@
 	</form>
 	</div>
 	<script type="text/javascript">
-	$('#datetimepicker1').datetimepicker({
-		useCurrent: true,
-		pickTime: false
+	$(function () {
+		$('#datetimepicker1').datetimepicker({
+			useCurrent: true
+		});
+		$('.glyphicon-remove').click(function(){
+			$('#enddate').val('');
+		});
 	});
 	</script>
 		

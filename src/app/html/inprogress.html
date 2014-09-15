@@ -73,45 +73,5 @@
 		    <li ng-class="(pg.last==pg.page)?'disabled':''"><a ui-sref ng-click="setNext()">&raquo;</a></li>
 		</ul>
 	</div>
-	<div id="message"></div>
-	<br>
-	<div>
-	<form role="form" id="getSomeForm" name="getSomeForm">
 
-		<div class="form-inline">
-	        
-		        <div class="form-group has-feedback" ng-class="{'has-error': getSomeForm.title.empty==1}">
-		        	<input id="title" class="form-control" name="title" type="text" ng-model="form.title" placeholder="Title">
-		        	<span ng-show="getSomeForm.title.empty" class="glyphicon glyphicon-ok form-control-feedback"></span>
-				</div>
-			
-			<div class="form-group">
-		        <div class="input-group">
-					<div class="input-group date" id="datetimepicker1">
-		                <input type="text" id="enddate" class="form-control" readonly="readonly" ng-model="form.enddate" ng-Change="dateChanged()" data-date-format="YYYY-MM-DD">
-		                <span class="input-group-addon">
-		                	<span class="glyphicon glyphicon-calendar"></span>
-		                </span>
-		            </div>
-				</div>
-			</div>
-			
-		</div>		
-
-	    <div class="form-group">
-	        <input id="description" class="form-control" name="description" type="text" ng-model="form.description" placeholder="Description">
-	    </div>
-	    
-	    <button class="btn btn-default" id="save" ng-click="save(form)" type="button">
-			<span class="glyphicon glyphicon-plus"></span>
-	    	Add</button>
-
-	</form>
-	</div>
-	<script type="text/javascript">
-	$('#datetimepicker1').datetimepicker({
-		useCurrent: true,
-		pickTime: false
-	});
-	</script>
 		
