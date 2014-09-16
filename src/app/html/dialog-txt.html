@@ -8,11 +8,14 @@
             <div class="modal-body">
                 <p>{{data.message}}</p>
                 <div style="max-height: 820px; overflow-y: auto;">
-                    <div ng-repeat="task in tasks">
-                        <div>
-                            - {{task.title}}: {{task.description}} |<status-badge task="task"></status-badge>
-                        </div>
-                    </div>
+                    <br>
+                    <ul ng-repeat="task in tasks">
+                        
+                            <li>{{task.title}}| <status-badge task="task"></status-badge>:
+                            {{task.description}}
+                            </li>
+                        
+                    </ul>
                     <br>
                 </div>
                
