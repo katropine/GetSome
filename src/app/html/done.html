@@ -1,7 +1,7 @@
 
 	<div class="panel panel-primary">
 	    <div class="panel-heading">
-	        <h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Done! ({{dataCount}})</h3>
+	        <h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Done! <span class="label label-default">{{dataCount}}</span></h3>
 	    </div>
 	    <div class="panel-body">
 	        <div id="shieldui-grid1" class="sui-grid sui-grid-core">
@@ -45,7 +45,9 @@
 	    		<table class="sui-table">
 	    			<tbody>
 	    				<tr class="sui-row" ng-repeat="task in data">
-	    					<td class="sui-cell"><span class="glyphicon glyphicon-th-list"></span> &nbsp; <button class="btn btn-transparent" ng-click="openModalEdit(task)">{{task.title}}</button></td>
+	    					<td class="sui-cell" ng-model="task.selected">
+	    						<button ng-if="rows.slected[task.id].selected!=1" class="btn btn-transparent" ng-click="rowSelect(task)"><span class="glyphicon glyphicon-unchecked"></span></button>
+								<button ng-if="rows.slected[task.id].selected==1" class="btn btn-transparent  text-danger" ng-click="rowUnselect(task)"><span class="glyphicon glyphicon-check"></span></button><span class="glyphicon glyphicon-th-list"></span> &nbsp; <button class="btn btn-transparent" ng-click="openModalEdit(task)">{{task.title}}</button></td>
 	    					<td class="sui-cell"><button class="btn btn-transparent" ng-click="openModalEdit(task)">{{task.description}}</button></td>
 	    					<td class="sui-cell text-center" style="width:60px">
 	    						<button type="button" ng-if="task.done==0" class="btn btn-transparent" ng-click="setDone(task)"><span class="glyphicon glyphicon-unchecked"></span></button>
@@ -54,6 +56,12 @@
 	    					<td class="sui-cell" style="width:90px">{{task.enddate|fromNow}}</td>
 	    					<td class="sui-cell" style="width:120px">{{task.created|date:'dd-MM-yyyy HH:mm'}}</td>
 	    					<td class="sui-cell" style="width:40px"><button type="button" ng-click="erase(task)" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></button></td>
+	    				</tr>
+	    				<tr>
+	    					<td class="sui-cell" colspan="6">
+	    						<button class="btn btn-transparent" ng-click="selectAll()">Select all</button> / <button class="btn btn-transparent" ng-click="unSelectAll()">Unselect all</button>
+	    						<button class="btn btn-default btn-xs pull-right" ng-click="openModalExportTxt()"><span class="glyphicon glyphicon-list-alt"></span> export txt</button>
+	    					</td>
 	    				</tr>
 	    			</tbody>
 	    		</table>

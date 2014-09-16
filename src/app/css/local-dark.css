@@ -7261,6 +7261,12 @@ table.tablesorter thead tr th:hover {
 .btn .red{
   background-color: #810000;
 }
+.text-highlight{
+	color: #2A9FD6;
+}
+.text-danger{
+	color: #CC0000;
+}
 .inprogress{
   background: url('inprogress.png') repeat;
 }
