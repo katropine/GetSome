@@ -5,11 +5,11 @@ TODO list, [node-webkit](https://github.com/rogerwang/node-webkit) , [angularjs]
 
 Download
 ======================
-Download a version for your OS, unpack and run/double click on nw
+Suported operating systems, Linux and Windows, unpack and run/double click on nw (linux) and nw.exe (windows)
 
 
-[Linux x64](https://github.com/katropine/GetSome/releases/tag/v1.6.2-linux-x64)
-
+[Linux x64](https://github.com/katropine/GetSome/releases/download/v1.6.2/getsome-v1.6.2-linux-x64.zip)
+[Windows](https://github.com/katropine/GetSome/releases/download/v1.6.2/getsome-v1.6.2-win32.zip)
 
 Screenshots
 ======================
