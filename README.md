@@ -5,7 +5,7 @@ TODO list, [node-webkit](https://github.com/rogerwang/node-webkit) , [angularjs]
 
 Download
 ======================
-Suported operating systems, Linux and Windows, unpack and run/double click on nw (linux) and nw.exe (windows)
+Supported operating systems, Linux and Windows, unpack and run/double click on nw (linux) and nw.exe (windows)
 
 
 [Download: Linux x64](https://github.com/katropine/GetSome/releases/download/v1.6.2/getsome-v1.6.2-linux-x64.zip)
