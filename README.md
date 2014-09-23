@@ -5,7 +5,10 @@ TODO list, [node-webkit](https://github.com/rogerwang/node-webkit) , [angularjs]
 
 Download
 ======================
-[linux x64](https://github.com/katropine/GetSome/releases/tag/v1.6.2-linux-x64)
+Download a version for your OS, unpack and run/double click on nw
+
+
+[Linux x64](https://github.com/katropine/GetSome/releases/tag/v1.6.2-linux-x64)
 
 
 Screenshots
