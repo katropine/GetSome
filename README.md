@@ -8,8 +8,9 @@ Download
 Suported operating systems, Linux and Windows, unpack and run/double click on nw (linux) and nw.exe (windows)
 
 
-[Linux x64](https://github.com/katropine/GetSome/releases/download/v1.6.2/getsome-v1.6.2-linux-x64.zip)
-[Windows](https://github.com/katropine/GetSome/releases/download/v1.6.2/getsome-v1.6.2-win32.zip)
+[Download: Linux x64](https://github.com/katropine/GetSome/releases/download/v1.6.2/getsome-v1.6.2-linux-x64.zip)
+
+[Download: Windows](https://github.com/katropine/GetSome/releases/download/v1.6.2/getsome-v1.6.2-win32.zip)
 
 Screenshots
 ======================
