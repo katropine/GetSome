@@ -147,3 +147,7 @@ table td btn{
     font-family: "Tahoma", Arial,Helvetica,sans-serif;
     font-size: 11px;
 }
+.done{
+	background-color: #D8D8D8;
+	color: #757575;
+}
