@@ -44,7 +44,7 @@
 	    	<div class="sui-gridcontent">
 	    		<table class="sui-table">
 	    			<tbody>
-	    				<tr class="sui-row" ng-repeat="task in data" ng-class="{'red': task.important==1}">
+	    				<tr class="sui-row" ng-repeat="task in data" ng-class="{'red': task.important==1, 'done': task.done==1}">
 	    					<td class="sui-cell" ng-model="task.selected">
 	    						<button ng-if="rows.slected[task.id].selected!=1" class="btn btn-transparent" ng-click="rowSelect(task)"><span class="glyphicon glyphicon-unchecked"></span></button>
 								<button ng-if="rows.slected[task.id].selected==1" class="btn btn-transparent text-danger" ng-click="rowUnselect(task)"><span class="glyphicon glyphicon-check"></span></button>
