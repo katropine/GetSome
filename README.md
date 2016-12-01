@@ -12,6 +12,19 @@ Supported operating systems, Linux and Windows, unpack and run/double click on n
 
 [Download: Windows](https://github.com/katropine/GetSome/releases/download/v1.6.2/getsome-v1.6.2-win32.zip)
 
+Potential Issues
+======================
+```
+error while loading shared libraries: libudev.so.0
+```
+Try:
+```
+cat nw | sed s/libudev.so.0/libudev.so.1/ > fixed_nw
+chmod a+x fixed_nw
+```
+Execute `fixed_nw`
+
+
 Screenshots
 ======================
 
